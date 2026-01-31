@@ -3,11 +3,15 @@ import mysql.connector
 from datetime import datetime
 import os
 from dotenv import load_dotenv
+from groq import Groq
 
 # Cargar variables de entorno desde el archivo .env
 load_dotenv()
 
 app = Flask(__name__)
+
+# Configurar cliente de Groq
+groq_client = Groq(api_key=os.getenv('GROQ_API_KEY'))
 
 def formato_moneda(valor):
     """Formatear número a formato monetario con separador de miles"""
@@ -334,6 +338,117 @@ def resumen_deuda(id_contribuyente):
         return jsonify(resumen)
     else:
         return jsonify({"error": "Contribuyente no encontrado"}), 404
+
+@app.route('/api/kpi_rurales')
+def kpi_rurales():
+    """Obtener KPIs de contribuyentes rurales"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # KPI: Contribuyentes en mora e importe adeudado total
+        sql_mora = """
+        SELECT 
+            c.ID_contribuyente,
+            c.Terreno,
+            coef.Valor as valor_categoria,
+            COUNT(DISTINCT r.NroRecibo) as cuotas_deudadas,
+            (COUNT(DISTINCT r.NroRecibo) * c.Terreno * coef.Valor) as deuda_total
+        FROM t_contribuyente c
+        INNER JOIN t_serviciosxcontribuyente sc ON c.ID_contribuyente = sc.ID_Contribuyente
+        INNER JOIN t_coeficientescontribucioninmuebles coef 
+            ON sc.ID_Servicio = coef.ID_CoeficientesContribucionInmuebles
+        INNER JOIN t_recibos r ON c.ID_contribuyente = r.ID_Contribuyente
+            AND r.ID_EstadoRecibo IN (1, 2, 4)
+        WHERE coef.Descripcion LIKE '%Rural%'
+        GROUP BY c.ID_contribuyente, c.Terreno, coef.Valor
+        HAVING cuotas_deudadas > 0
+        """
+        
+        cursor.execute(sql_mora)
+        resultado_mora = cursor.fetchall()
+        
+        contribuyentes_en_mora = len(resultado_mora)
+        importe_adeudado = sum(float(r['deuda_total'] or 0) for r in resultado_mora)
+        
+        # KPI: Total de contribuyentes rurales
+        sql_total = """
+        SELECT COUNT(DISTINCT c.ID_contribuyente) as total_contribuyentes
+        FROM t_contribuyente c
+        INNER JOIN t_serviciosxcontribuyente sc ON c.ID_contribuyente = sc.ID_Contribuyente
+        INNER JOIN t_coeficientescontribucioninmuebles coef 
+            ON sc.ID_Servicio = coef.ID_CoeficientesContribucionInmuebles
+        WHERE coef.Descripcion LIKE '%Rural%'
+        """
+        
+        cursor.execute(sql_total)
+        resultado_total = cursor.fetchone()
+        total_contribuyentes = resultado_total['total_contribuyentes']
+        
+        # Calcular contribuyentes sin mora
+        contribuyentes_sin_mora = total_contribuyentes - contribuyentes_en_mora
+        
+        cursor.close()
+        conn.close()
+        
+        return jsonify({
+            'importe_adeudado': importe_adeudado,
+            'contribuyentes_en_mora': contribuyentes_en_mora,
+            'contribuyentes_sin_mora': contribuyentes_sin_mora,
+            'total_contribuyentes': total_contribuyentes
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/listado_deuda_rural')
+def listado_deuda_rural():
+    """Mostrar listado completo de deudas de todos los contribuyentes rurales"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Consulta para obtener todos los contribuyentes rurales con sus deudas
+        sql = """
+        SELECT 
+            c.ID_contribuyente,
+            CONCAT(p.Apellido, ', ', p.Nombre) as nombre_completo,
+            c.Terreno as hectareas,
+            coef.Descripcion as categoria,
+            coef.Valor as valor_categoria,
+            COUNT(DISTINCT r.NroRecibo) as cuotas_deudadas,
+            (COUNT(DISTINCT r.NroRecibo) * c.Terreno * coef.Valor) as deuda_total
+        FROM t_contribuyente c
+        INNER JOIN t_personas p ON c.ID_persona = p.ID_Persona
+        INNER JOIN t_serviciosxcontribuyente sc ON c.ID_contribuyente = sc.ID_Contribuyente
+        INNER JOIN t_coeficientescontribucioninmuebles coef 
+            ON sc.ID_Servicio = coef.ID_CoeficientesContribucionInmuebles
+        LEFT JOIN t_recibos r ON c.ID_contribuyente = r.ID_Contribuyente
+            AND r.ID_EstadoRecibo IN (1, 2, 4)
+        WHERE coef.Descripcion LIKE '%Rural%'
+        GROUP BY c.ID_contribuyente, p.Apellido, p.Nombre, c.Terreno, coef.Descripcion, coef.Valor
+        HAVING cuotas_deudadas > 0
+        ORDER BY p.Apellido, p.Nombre
+        """
+        
+        cursor.execute(sql)
+        contribuyentes = cursor.fetchall()
+        
+        # Calcular totales manejando valores None
+        total_hectareas = sum(float(c['hectareas'] or 0) for c in contribuyentes)
+        total_cuotas = sum(int(c['cuotas_deudadas'] or 0) for c in contribuyentes)
+        total_deuda = sum(float(c['deuda_total'] or 0) for c in contribuyentes)
+        
+        cursor.close()
+        conn.close()
+        
+        return render_template('listado_deuda_rural.html', 
+                             contribuyentes=contribuyentes,
+                             total_hectareas=total_hectareas,
+                             total_cuotas=total_cuotas,
+                             total_deuda=total_deuda,
+                             fecha_generacion=datetime.now())
+    except Exception as e:
+        return f"Error al generar listado: {str(e)}", 500
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listado de Deudas Rurales - Comuna de Juncal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.6em;
+            margin-bottom: 8px;
+        }
+
+        .header h2 {
+            font-size: 1em;
+            font-weight: normal;
+            opacity: 0.9;
+        }
+
+        .info-bar {
+            background: #f8f9fa;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .fecha-generacion {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85em;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .search-box {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 12px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.75em;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #667eea;
+            color: white;
+            padding: 8px 10px;
+            text-align: left;
+            font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            font-size: 0.9em;
+        }
+
+        th:hover {
+            background: #5568d3;
+        }
+
+        th.sortable::after {
+            content: ' ⇅';
+            opacity: 0.5;
+        }
+
+        th.sorted-asc::after {
+            content: ' ▲';
+            opacity: 1;
+        }
+
+        th.sorted-desc::after {
+            content: ' ▼';
+            opacity: 1;
+        }
+
+        td {
+            padding: 6px 10px;
+            border-bottom: 1px solid #e9ecef;
+            font-size: 0.9em;
+            line-height: 1.3;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        tr.hidden {
+            display: none;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .nombre-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .nombre-link:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+
+        .total-row {
+            background: #f8f9fa;
+            font-weight: bold;
+            border-top: 3px solid #667eea;
+        }
+
+        .total-row td {
+            padding: 10px;
+            font-size: 1em;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .container {
+                box-shadow: none;
+                max-width: 100%;
+            }
+
+            .buttons {
+                display: none;
+            }
+
+            .search-box {
+                display: none;
+            }
+
+            .header {
+                padding: 15px;
+            }
+
+            .header h1 {
+                font-size: 1.5em;
+                margin-bottom: 5px;
+            }
+
+            .header h2 {
+                font-size: 1em;
+            }
+
+            .info-bar {
+                padding: 10px 15px;
+            }
+
+            .content {
+                padding: 15px;
+            }
+
+            .stats {
+                margin-bottom: 15px;
+                gap: 10px;
+            }
+
+            .stat-card {
+                padding: 8px 10px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .stat-label {
+                font-size: 0.7em;
+                margin-bottom: 3px;
+            }
+
+            .stat-value {
+                font-size: 1.1em;
+            }
+
+            th {
+                background: #667eea !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                padding: 5px 8px !important;
+                font-size: 0.85em !important;
+            }
+
+            td {
+                padding: 4px 8px !important;
+                font-size: 0.85em !important;
+            }
+
+            .total-row td {
+                padding: 6px 8px !important;
+                font-size: 0.9em !important;
+            }
+
+            @page {
+                margin: 1cm;
+                size: landscape;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Listado de Deudas - Servicios Rurales</h1>
+            <h2>Comuna de Juncal</h2>
+        </div>
+
+        <div class="info-bar">
+            <div class="fecha-generacion">
+                📅 Generado el: {{ fecha_generacion|fecha }}
+            </div>
+            <div class="buttons">
+                <button class="btn btn-primary" onclick="window.print()">🖨️ Imprimir</button>
+                <a href="/" class="btn btn-secondary">⬅️ Volver</a>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="search-box">
+                <input type="text" 
+                       id="searchInput" 
+                       placeholder="🔍 Buscar por nombre o categoría..."
+                       autocomplete="off">
+            </div>
+
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-label">Total Contribuyentes</div>
+                    <div class="stat-value">{{ contribuyentes|length }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Hectáreas</div>
+                    <div class="stat-value">{{ total_hectareas|moneda }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Cuotas Adeudadas</div>
+                    <div class="stat-value">{{ total_cuotas }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Deuda Total</div>
+                    <div class="stat-value">${{ total_deuda|moneda }}</div>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table id="debtTable">
+                    <thead>
+                        <tr>
+                            <th class="sortable" data-column="nombre">Nombre</th>
+                            <th class="sortable text-center" data-column="hectareas">Hectáreas</th>
+                            <th class="sortable text-center" data-column="categoria">Categoría</th>
+                            <th class="sortable text-right" data-column="valor">Valor/Ha</th>
+                            <th class="sortable text-center" data-column="cuotas">Cuotas Deudadas</th>
+                            <th class="sortable text-right" data-column="deuda">Deuda Total</th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        {% for c in contribuyentes %}
+                        <tr data-search="{{ c.nombre_completo|lower }}">
+                            <td>{{ c.nombre_completo }}</td>
+                            <td class="text-center">{{ c.hectareas|moneda }}</td>
+                            <td class="text-center">{{ c.categoria }}</td>
+                            <td class="text-right">${{ c.valor_categoria|moneda }}</td>
+                            <td class="text-center">{{ c.cuotas_deudadas }}</td>
+                            <td class="text-right">${{ c.deuda_total|moneda }}</td>
+                            <td class="text-center">
+                                <a href="/liquidacion/{{ c.ID_contribuyente }}" 
+                                   class="nombre-link"
+                                   target="_blank"
+                                   title="Ver liquidación completa">
+                                   📄 Ver
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="total-row">
+                            <td>TOTALES</td>
+                            <td class="text-center">{{ total_hectareas|moneda }}</td>
+                            <td colspan="2"></td>
+                            <td class="text-center">{{ total_cuotas }}</td>
+                            <td class="text-right">${{ total_deuda|moneda }}</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Búsqueda en tiempo real
+        const searchInput = document.getElementById('searchInput');
+        const tableBody = document.getElementById('tableBody');
+        const rows = tableBody.querySelectorAll('tr');
+
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            
+            rows.forEach(row => {
+                const searchData = row.getAttribute('data-search');
+                if (searchData.includes(searchTerm)) {
+                    row.classList.remove('hidden');
+                } else {
+                    row.classList.add('hidden');
+                }
+            });
+        });
+
+        // Ordenamiento de tabla
+        const table = document.getElementById('debtTable');
+        const headers = table.querySelectorAll('th.sortable');
+        let currentSort = { column: null, direction: 'asc' };
+
+        headers.forEach(header => {
+            header.addEventListener('click', function() {
+                const column = this.getAttribute('data-column');
+                const direction = currentSort.column === column && currentSort.direction === 'asc' ? 'desc' : 'asc';
+                
+                // Remover clases de ordenamiento previas
+                headers.forEach(h => {
+                    h.classList.remove('sorted-asc', 'sorted-desc');
+                });
+                
+                // Agregar clase de ordenamiento actual
+                this.classList.add(direction === 'asc' ? 'sorted-asc' : 'sorted-desc');
+                
+                sortTable(column, direction);
+                currentSort = { column, direction };
+            });
+        });
+
+        function sortTable(column, direction) {
+            const tbody = table.querySelector('tbody');
+            const rowsArray = Array.from(tbody.querySelectorAll('tr'));
+            
+            rowsArray.sort((a, b) => {
+                let aValue, bValue;
+                
+                switch(column) {
+                    case 'nombre':
+                        aValue = a.children[0].textContent.trim();
+                        bValue = b.children[0].textContent.trim();
+                        return direction === 'asc' 
+                            ? aValue.localeCompare(bValue) 
+                            : bValue.localeCompare(aValue);
+                    
+                    case 'hectareas':
+                        aValue = parseFloat(a.children[1].textContent.replace(/\./g, '').replace(',', '.'));
+                        bValue = parseFloat(b.children[1].textContent.replace(/\./g, '').replace(',', '.'));
+                        break;
+                    
+                    case 'categoria':
+                        aValue = a.children[2].textContent.trim();
+                        bValue = b.children[2].textContent.trim();
+                        return direction === 'asc' 
+                            ? aValue.localeCompare(bValue) 
+                            : bValue.localeCompare(aValue);
+                    
+                    case 'valor':
+                        aValue = parseFloat(a.children[3].textContent.replace('$', '').replace(/\./g, '').replace(',', '.'));
+                        bValue = parseFloat(b.children[3].textContent.replace('$', '').replace(/\./g, '').replace(',', '.'));
+                        break;
+                    
+                    case 'cuotas':
+                        aValue = parseInt(a.children[4].textContent);
+                        bValue = parseInt(b.children[4].textContent);
+                        break;
+                    
+                    case 'deuda':
+                        aValue = parseFloat(a.children[5].textContent.replace('$', '').replace(/\./g, '').replace(',', '.'));
+                        bValue = parseFloat(b.children[5].textContent.replace('$', '').replace(/\./g, '').replace(',', '.'));
+                        break;
+                }
+                
+                return direction === 'asc' ? aValue - bValue : bValue - aValue;
+            });
+            
+            // Reordenar las filas en el DOM
+            rowsArray.forEach(row => tbody.appendChild(row));
+        }
+    </script>
+</body>
+</html>
