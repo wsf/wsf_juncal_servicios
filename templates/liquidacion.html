@@ -78,51 +78,6 @@
 
         {% if recibos_impagos %}
         <section class="deuda-section">
-            <h3>💰 Detalle de Deuda - Recibos Impagos</h3>
-            <table class="tabla-recibos">
-                <thead>
-                    <tr>
-                        <th>Nro Recibo</th>
-                        <th>Período</th>
-                        <th>Fecha Generación</th>
-                        <th>Valor Actual Combustible</th>
-                        <th>Categoría</th>
-                        <th>Importe Calculado</th>
-                        <th>Importe Facturado</th>
-                        <th>Estado</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for recibo in recibos_impagos %}
-                    <tr>
-                        <td>{{ recibo.NroRecibo }}</td>
-                        <td>{{ recibo.Periodo }}</td>
-                        <td>{{ recibo.FechaGeneracion }}</td>
-                        <td>${{ "%.2f"|format(contribuyente.ValorActualPorHa) }}</td>
-                        <td>{{ contribuyente.Categoria }}</td>
-                        <td>${{ "%.2f"|format(importe_calculado) }}</td>
-                        <td class="monto">${{ "%.2f"|format(recibo.ImporteFacturado) }}</td>
-                        <td><span class="estado-impago">{{ recibo.Estado }}</span></td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-
-            <div class="total-deuda">
-                <div class="total-row">
-                    <span>Cantidad de Períodos Adeudados:</span>
-                    <strong>{{ cantidad_impagos }}</strong>
-                </div>
-                <div class="total-row">
-                    <span>Importe Total Calculado (Valor Actual):</span>
-                    <strong>${{ "%.2f"|format(importe_calculado * cantidad_impagos) }}</strong>
-                </div>
-                <div class="total-row destacado-grande">
-                    <span>TOTAL DEUDA FACTURADA:</span>
-                    <strong>${{ "%.2f"|format(total_deuda) }}</strong>
-                </div>
-            </div>
-
             <!-- Certificado de Deuda Editable -->
             <div class="certificado-section">
                 <h3>📜 CERTIFICADO DE DEUDA</h3>
@@ -142,10 +97,49 @@
                 </div>
             </div>
 
-            <!-- Anexo de Períodos Adeudados -->
-            <div class="anexo-periodos">
-                <h4>ANEXO - DETALLE DE PERÍODOS ADEUDADOS</h4>
-                <p style="margin-top: 10px; line-height: 1.6;">{{ periodos_detalle }}</p>
+            <h3 style="margin-top: 40px;">💰 Detalle de Deuda - Recibos Impagos</h3>
+            <table class="tabla-recibos">
+                <thead>
+                    <tr>
+                        <th>Nro Recibo</th>
+                        <th>Período</th>
+                        <th>Fecha Generación</th>
+                        <th>Valor Actual Combustible</th>
+                        <th>Categoría</th>
+                        <th>Importe Calculado</th>
+                        <th>Importe Facturado</th>
+                        <th class="col-estado">Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for recibo in recibos_impagos %}
+                    <tr>
+                        <td>{{ recibo.NroRecibo }}</td>
+                        <td>{{ recibo.Periodo }}</td>
+                        <td>{{ recibo.FechaGeneracion }}</td>
+                        <td>${{ "%.2f"|format(contribuyente.ValorActualPorHa) }}</td>
+                        <td>{{ contribuyente.Categoria }}</td>
+                        <td>${{ "%.2f"|format(importe_calculado) }}</td>
+                        <td class="monto">${{ "%.2f"|format(recibo.ImporteFacturado) }}</td>
+                        <td class="col-estado"><span class="estado-impago">{{ recibo.Estado }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="total-deuda">
+                <div class="total-row">
+                    <span>Cantidad de Períodos Adeudados:</span>
+                    <strong>{{ cantidad_impagos }}</strong>
+                </div>
+                <div class="total-row">
+                    <span>Importe Total Calculado (Valor Actual):</span>
+                    <strong>${{ "%.2f"|format(importe_calculado * cantidad_impagos) }}</strong>
+                </div>
+                <div class="total-row destacado-grande">
+                    <span>TOTAL DEUDA FACTURADA:</span>
+                    <strong>${{ "%.2f"|format(total_deuda) }}</strong>
+                </div>
             </div>
         </section>
         {% else %}

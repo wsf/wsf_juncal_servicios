@@ -529,11 +529,7 @@ footer {
 
     .certificado-section {
         page-break-inside: avoid;
-    }
-
-    .anexo-periodos {
-        page-break-inside: avoid;
-        margin-top: 20px;
+        margin-bottom: 30px;
     }
 
     .tabs-container {
@@ -545,6 +541,11 @@ footer {
     }
 
     #tab-historial {
+        display: none !important;
+    }
+
+    /* Ocultar columna Estado en impresión */
+    .col-estado {
         display: none !important;
     }
 }
