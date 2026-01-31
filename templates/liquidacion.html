@@ -101,7 +101,7 @@
                         <th>Período</th>
                         <th>Fecha Generación</th>
                         <th>Valor Actual Combustible</th>
-                        <th>Importe Calculado</th>
+                        <th>Importe Deuda Actualizada</th>
                         <th>Importe Facturado</th>
                         <th class="col-estado">Estado</th>
                     </tr>
@@ -126,12 +126,12 @@
                     <span>Cantidad de Períodos Adeudados:</span>
                     <strong>{{ cantidad_impagos }}</strong>
                 </div>
-                <div class="total-row">
-                    <span>Importe Total Calculado (Valor Actual):</span>
+                <div class="total-row destacado-grande">
+                    <span>TOTAL DEUDA ACTUALIZADA:</span>
                     <strong>${{ "%.2f"|format(importe_calculado * cantidad_impagos) }}</strong>
                 </div>
-                <div class="total-row destacado-grande">
-                    <span>TOTAL DEUDA FACTURADA:</span>
+                <div class="total-row">
+                    <span>Total Facturado Originalmente:</span>
                     <strong>${{ "%.2f"|format(total_deuda) }}</strong>
                 </div>
             </div>
