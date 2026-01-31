@@ -63,7 +63,7 @@
                 <div class="info-item">
         <!-- Tab de Deuda -->
         <div id="tab-deuda" class="tab-content active">
-                    <label>Valor por Hectárea:</label>
+                    <label>Valor por Hectárea (actualizado a la fecha):</label>
                     <span><strong>${{ "%.2f"|format(contribuyente.ValorActualPorHa) }}</strong></span>
                 </div>
                 <div class="info-item">
@@ -101,7 +101,6 @@
                         <th>Nro Recibo</th>
                         <th>Período</th>
                         <th>Fecha Generación</th>
-                        <th>Valor Actual Combustible</th>
                         <th>Importe Deuda Actualizada</th>
                         <th>Importe Facturado</th>
                         <th class="col-estado">Estado</th>
@@ -113,7 +112,6 @@
                         <td>{{ recibo.NroRecibo }}</td>
                         <td>{{ recibo.Periodo }}</td>
                         <td>{{ recibo.FechaGeneracion }}</td>
-                        <td>${{ "%.2f"|format(contribuyente.ValorActualPorHa) }}</td>
                         <td>${{ "%.2f"|format(importe_calculado) }}</td>
                         <td class="monto">${{ "%.2f"|format(recibo.ImporteFacturado) }}</td>
                         <td class="col-estado"><span class="estado-impago">{{ recibo.Estado }}</span></td>
