@@ -58,17 +58,17 @@
                 </div>
                 <div class="info-item">
                     <label>Hectáreas:</label>
-                    <span><strong>{{ "%.2f"|format(contribuyente.Hectareas) }} has</strong></span>
+                    <span><strong>{{ "{:,.2f}"|format(contribuyente.Hectareas) }} has</strong></span>
                 </div>
                 <div class="info-item">
         <!-- Tab de Deuda -->
         <div id="tab-deuda" class="tab-content active">
                     <label>Valor por Hectárea (actualizado a la fecha):</label>
-                    <span><strong>${{ "%.2f"|format(contribuyente.ValorActualPorHa) }}</strong></span>
+                    <span><strong>${{ "{:,.2f}"|format(contribuyente.ValorActualPorHa) }}</strong></span>
                 </div>
                 <div class="info-item">
                     <label>Importe por Período:</label>
-                    <span class="destacado">${{ "%.2f"|format(importe_calculado) }}</span>
+                    <span class="destacado">${{ "{:,.2f}"|format(importe_calculado) }}</span>
                 </div>
             </div>
         </section>
@@ -112,8 +112,8 @@
                         <td>{{ recibo.NroRecibo }}</td>
                         <td>{{ recibo.Periodo }}</td>
                         <td>{{ recibo.FechaGeneracion }}</td>
-                        <td>${{ "%.2f"|format(importe_calculado) }}</td>
-                        <td class="monto">${{ "%.2f"|format(recibo.ImporteFacturado) }}</td>
+                        <td>${{ "{:,.2f}"|format(importe_calculado) }}</td>
+                        <td class="monto">${{ "{:,.2f}"|format(recibo.ImporteFacturado) }}</td>
                         <td class="col-estado"><span class="estado-impago">{{ recibo.Estado }}</span></td>
                     </tr>
                     {% endfor %}
@@ -127,11 +127,11 @@
                 </div>
                 <div class="total-row destacado-grande">
                     <span>TOTAL DEUDA ACTUALIZADA:</span>
-                    <strong>${{ "%.2f"|format(importe_calculado * cantidad_impagos) }}</strong>
+                    <strong>${{ "{:,.2f}"|format(importe_calculado * cantidad_impagos) }}</strong>
                 </div>
                 <div class="total-row">
                     <span>Total Facturado Originalmente:</span>
-                    <strong>${{ "%.2f"|format(total_deuda) }}</strong>
+                    <strong>${{ "{:,.2f}"|format(total_deuda) }}</strong>
                 </div>
             </div>
         </section>
@@ -168,7 +168,7 @@
                         <td>{{ recibo.NroRecibo }}</td>
                         <td>{{ recibo.Periodo }}</td>
                         <td>{{ recibo.FechaGeneracion }}</td>
-                        <td class="monto">${{ "%.2f"|format(recibo.ImporteFacturado) }}</td>
+                        <td class="monto">${{ "{:,.2f}"|format(recibo.ImporteFacturado) }}</td>
                         <td>{{ recibo.FechaPago }}</td>
                         <td><span class="estado-pagado">{{ recibo.Estado }}</span></td>
                     </tr>
@@ -183,7 +183,7 @@
 
         <footer class="liquidacion-footer">
             <p><strong>Nota:</strong> Esta liquidación fue generada automáticamente en base a la información registrada en el sistema.</p>
-            <p>Los importes calculados utilizan el valor actual de la categoría ({{ contribuyente.Categoria }}: ${{ "%.2f"|format(contribuyente.ValorActualPorHa) }}/ha).</p>
+            <p>Los importes calculados utilizan el valor actual de la categoría ({{ contribuyente.Categoria }}: ${{ "{:,.2f}"|format(contribuyente.ValorActualPorHa) }}/ha).</p>
             <p>© 2026 Municipio de Juncal - Sistema de Gestión de Servicios Rurales</p>
         </footer>
     </div>
