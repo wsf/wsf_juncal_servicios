@@ -152,17 +152,17 @@ header h2 {
 .tabs-container {
     display: flex;
     gap: 10px;
-    margin-bottom: 30px;
+    margin-bottom: 15px;
     border-bottom: 2px solid #e0e0e0;
 }
 
 .tab-button {
-    padding: 12px 24px;
+    padding: 8px 20px;
     background: white;
     border: none;
     border-bottom: 3px solid transparent;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 500;
     color: #666;
     transition: all 0.3s;
@@ -203,26 +203,26 @@ header h2 {
 /* Liquidación */
 .liquidacion-header {
     text-align: center;
-    margin-bottom: 30px;
-    padding-bottom: 20px;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
     border-bottom: 2px solid #667eea;
 }
 
 .liquidacion-header h1 {
     color: #667eea;
-    font-size: 2em;
-    margin-bottom: 10px;
+    font-size: 1.5em;
+    margin-bottom: 5px;
 }
 
 .liquidacion-header h2 {
     color: #333;
-    font-size: 1.4em;
-    margin-bottom: 10px;
+    font-size: 1.1em;
+    margin-bottom: 5px;
 }
 
 .fecha-emision {
     color: #666;
-    font-size: 14px;
+    font-size: 12px;
 }
 
 .btn-back, .btn-print {
@@ -245,31 +245,32 @@ header h2 {
 
 /* Datos del contribuyente */
 .datos-contribuyente {
-    margin-bottom: 30px;
-    padding: 20px;
+    margin-bottom: 20px;
+    padding: 12px;
     background: #f9f9f9;
     border-radius: 8px;
 }
 
 .datos-contribuyente h3 {
     color: #333;
-    margin-bottom: 20px;
-    font-size: 1.3em;
+    margin-bottom: 12px;
+    font-size: 1.1em;
 }
 
 .info-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 15px;
+    gap: 10px;
 }
 
 .info-item {
     display: flex;
     justify-content: space-between;
-    padding: 10px;
+    padding: 8px;
     background: white;
     border-radius: 5px;
     border-left: 3px solid #667eea;
+    font-size: 14px;
 }
 
 .info-item label {
