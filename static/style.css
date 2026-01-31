@@ -206,6 +206,16 @@ header h2 {
     margin-bottom: 15px;
     padding-bottom: 10px;
     border-bottom: 2px solid #667eea;
+    position: relative;
+}
+
+.logo-municipio {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 50px;
+    width: auto;
+    object-fit: contain;
 }
 
 .liquidacion-header h1 {
