@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consultas Inteligentes - Comuna de Juncal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.6em;
+            margin-bottom: 8px;
+        }
+
+        .header h2 {
+            font-size: 1em;
+            font-weight: normal;
+            opacity: 0.9;
+        }
+
+        .info-bar {
+            background: #f8f9fa;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .info-text {
+            color: #666;
+            font-size: 0.85em;
+        }
+
+        .btn-back {
+            padding: 8px 16px;
+            background: #6c757d;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 0.85em;
+            transition: all 0.3s;
+        }
+
+        .btn-back:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+        }
+
+        .content {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 250px);
+            min-height: 500px;
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #667eea;
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        .info-box h3 {
+            font-size: 0.9em;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .info-box ul {
+            margin-left: 20px;
+            font-size: 0.85em;
+            color: #666;
+        }
+
+        .info-box li {
+            margin-bottom: 4px;
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #f8f9fa;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 0.9em;
+            line-height: 1.5;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .message.assistant {
+            align-self: flex-start;
+            background: white;
+            border: 1px solid #e9ecef;
+            color: #333;
+        }
+
+        .message.error {
+            align-self: center;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .message.loading {
+            align-self: flex-start;
+            background: white;
+            border: 1px solid #e9ecef;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .message-meta {
+            font-size: 0.75em;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+
+        .chat-input-container {
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 20px;
+            font-size: 0.9em;
+            transition: all 0.3s;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn-send {
+            padding: 10px 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-send:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-send:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .examples {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .example-btn {
+            padding: 6px 12px;
+            background: #e7f3ff;
+            border: 1px solid #667eea;
+            color: #667eea;
+            border-radius: 15px;
+            font-size: 0.8em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .example-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 Consultas Inteligentes con IA</h1>
+            <h2>Comuna de Juncal - Asistente Virtual</h2>
+        </div>
+
+        <div class="info-bar">
+            <div class="info-text">
+                💡 Pregunta sobre contribuyentes rurales y sus deudas
+            </div>
+            <a href="/" class="btn-back">⬅️ Volver</a>
+        </div>
+
+        <div class="content">
+            <div class="info-box">
+                <h3>💬 Ejemplos de preguntas que puedes hacer:</h3>
+                <ul>
+                    <li>¿Cuántos contribuyentes tienen deuda?</li>
+                    <li>¿Quién tiene la mayor deuda?</li>
+                    <li>Dame información sobre [nombre del contribuyente]</li>
+                    <li>¿Cuál es la deuda total acumulada?</li>
+                    <li>Lista los contribuyentes con más de 50 hectáreas</li>
+                </ul>
+            </div>
+
+            <div class="chat-container">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message assistant">
+                        👋 ¡Hola! Soy tu asistente virtual de la Comuna de Juncal. Puedo ayudarte con información sobre contribuyentes rurales, sus deudas y estadísticas. ¿En qué puedo ayudarte hoy?
+                    </div>
+                </div>
+
+                <div class="chat-input-container">
+                    <div class="examples">
+                        <button class="example-btn" onclick="usarEjemplo('¿Cuántos contribuyentes tienen deuda?')">
+                            📊 Estadísticas
+                        </button>
+                        <button class="example-btn" onclick="usarEjemplo('¿Quién tiene la mayor deuda?')">
+                            💰 Mayor deuda
+                        </button>
+                        <button class="example-btn" onclick="usarEjemplo('Lista los top 5 contribuyentes por deuda')">
+                            📋 Top 5
+                        </button>
+                    </div>
+                    <textarea 
+                        id="chatInput" 
+                        class="chat-input" 
+                        placeholder="Escribe tu pregunta aquí..."
+                        rows="1"
+                        onkeypress="handleKeyPress(event)"></textarea>
+                    <button id="btnSend" class="btn-send" onclick="enviarPregunta()">
+                        ➤ Enviar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+        const btnSend = document.getElementById('btnSend');
+
+        function scrollToBottom() {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function usarEjemplo(texto) {
+            chatInput.value = texto;
+            chatInput.focus();
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                enviarPregunta();
+            }
+        }
+
+        function agregarMensaje(tipo, contenido, meta = '') {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${tipo}`;
+            
+            if (tipo === 'loading') {
+                messageDiv.innerHTML = `
+                    <div class="loading-spinner"></div>
+                    <span>${contenido}</span>
+                `;
+            } else {
+                messageDiv.innerHTML = contenido;
+                if (meta) {
+                    messageDiv.innerHTML += `<div class="message-meta">${meta}</div>`;
+                }
+            }
+            
+            chatMessages.appendChild(messageDiv);
+            scrollToBottom();
+            return messageDiv;
+        }
+
+        async function enviarPregunta() {
+            const pregunta = chatInput.value.trim();
+            
+            if (!pregunta) {
+                return;
+            }
+
+            // Deshabilitar input
+            chatInput.disabled = true;
+            btnSend.disabled = true;
+
+            // Mostrar mensaje del usuario
+            agregarMensaje('user', pregunta);
+            chatInput.value = '';
+
+            // Mostrar indicador de carga
+            const loadingMsg = agregarMensaje('loading', 'Pensando...');
+
+            try {
+                const response = await fetch('/api/consultar_llm', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ pregunta: pregunta })
+                });
+
+                const data = await response.json();
+
+                // Remover indicador de carga
+                loadingMsg.remove();
+
+                if (response.ok) {
+                    // Formatear respuesta con saltos de línea
+                    const respuestaFormateada = data.respuesta.replace(/\n/g, '<br>');
+                    const meta = data.tokens_usados ? `Tokens usados: ${data.tokens_usados}` : '';
+                    agregarMensaje('assistant', respuestaFormateada, meta);
+                } else {
+                    agregarMensaje('error', `❌ Error: ${data.error || 'No se pudo procesar la consulta'}`);
+                }
+            } catch (error) {
+                loadingMsg.remove();
+                agregarMensaje('error', `❌ Error de conexión: ${error.message}`);
+            } finally {
+                // Rehabilitar input
+                chatInput.disabled = false;
+                btnSend.disabled = false;
+                chatInput.focus();
+            }
+        }
+
+        // Auto-resize textarea
+        chatInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+    </script>
+</body>
+</html>

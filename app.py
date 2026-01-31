@@ -450,5 +450,93 @@ def listado_deuda_rural():
     except Exception as e:
         return f"Error al generar listado: {str(e)}", 500
 
+@app.route('/consultas_llm')
+def consultas_llm():
+    """Página de consultas con LLM"""
+    return render_template('consultas_llm.html')
+
+@app.route('/api/consultar_llm', methods=['POST'])
+def consultar_llm():
+    """Procesar consulta con LLM usando Groq"""
+    try:
+        data = request.get_json()
+        pregunta = data.get('pregunta', '')
+        
+        if not pregunta:
+            return jsonify({"error": "No se proporcionó pregunta"}), 400
+        
+        # Obtener contexto de la base de datos
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Obtener resumen de contribuyentes rurales
+        sql_contexto = """
+        SELECT 
+            c.ID_contribuyente,
+            CONCAT(p.Apellido, ', ', p.Nombre) as nombre_completo,
+            c.Terreno as hectareas,
+            coef.Descripcion as categoria,
+            coef.Valor as valor_categoria,
+            COUNT(DISTINCT r.NroRecibo) as cuotas_deudadas,
+            (COUNT(DISTINCT r.NroRecibo) * c.Terreno * coef.Valor) as deuda_total
+        FROM t_contribuyente c
+        INNER JOIN t_personas p ON c.ID_persona = p.ID_Persona
+        INNER JOIN t_serviciosxcontribuyente sc ON c.ID_contribuyente = sc.ID_Contribuyente
+        INNER JOIN t_coeficientescontribucioninmuebles coef 
+            ON sc.ID_Servicio = coef.ID_CoeficientesContribucionInmuebles
+        LEFT JOIN t_recibos r ON c.ID_contribuyente = r.ID_Contribuyente
+            AND r.ID_EstadoRecibo IN (1, 2, 4)
+        WHERE coef.Descripcion LIKE '%Rural%'
+        GROUP BY c.ID_contribuyente, p.Apellido, p.Nombre, c.Terreno, coef.Descripcion, coef.Valor
+        ORDER BY p.Apellido, p.Nombre
+        LIMIT 100
+        """
+        
+        cursor.execute(sql_contexto)
+        contribuyentes = cursor.fetchall()
+        
+        cursor.close()
+        conn.close()
+        
+        # Preparar contexto para el LLM
+        contexto = "Información de contribuyentes rurales de la Comuna de Juncal:\n\n"
+        for c in contribuyentes:
+            contexto += f"- {c['nombre_completo']}: {c['hectareas']} hectáreas, Categoría {c['categoria']}, "
+            contexto += f"Cuotas adeudadas: {c['cuotas_deudadas']}, Deuda total: ${c['deuda_total']:,.2f}\n"
+        
+        # Llamar a Groq
+        chat_completion = groq_client.chat.completions.create(
+            messages=[
+                {
+                    "role": "system",
+                    "content": f"""Eres un asistente experto en analizar información de contribuyentes rurales de la Comuna de Juncal. 
+                    
+Contexto de datos disponibles:
+{contexto}
+
+Responde de forma clara, concisa y profesional. Si te preguntan por un contribuyente específico, busca en los datos proporcionados.
+Si necesitas hacer cálculos, hazlos basándote en los datos. Usa formato argentino para montos ($1.234,56).
+Si no tienes la información exacta, indica que necesitas más detalles."""
+                },
+                {
+                    "role": "user",
+                    "content": pregunta
+                }
+            ],
+            model="llama-3.3-70b-versatile",
+            temperature=0.3,
+            max_tokens=1024,
+        )
+        
+        respuesta = chat_completion.choices[0].message.content
+        
+        return jsonify({
+            "respuesta": respuesta,
+            "tokens_usados": chat_completion.usage.total_tokens
+        })
+        
+    except Exception as e:
+        return jsonify({"error": f"Error al procesar consulta: {str(e)}"}), 500
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
