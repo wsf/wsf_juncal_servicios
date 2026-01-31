@@ -5,6 +5,86 @@ import os
 
 app = Flask(__name__)
 
+def numero_a_letras(numero):
+    """Convertir número decimal a texto en español"""
+    unidades = ['', 'UN', 'DOS', 'TRES', 'CUATRO', 'CINCO', 'SEIS', 'SIETE', 'OCHO', 'NUEVE']
+    decenas = ['', '', 'VEINTE', 'TREINTA', 'CUARENTA', 'CINCUENTA', 'SESENTA', 'SETENTA', 'OCHENTA', 'NOVENTA']
+    especiales = {10: 'DIEZ', 11: 'ONCE', 12: 'DOCE', 13: 'TRECE', 14: 'CATORCE', 15: 'QUINCE', 
+                  16: 'DIECISEIS', 17: 'DIECISIETE', 18: 'DIECIOCHO', 19: 'DIECINUEVE'}
+    centenas = ['', 'CIENTO', 'DOSCIENTOS', 'TRESCIENTOS', 'CUATROCIENTOS', 'QUINIENTOS', 
+                'SEISCIENTOS', 'SETECIENTOS', 'OCHOCIENTOS', 'NOVECIENTOS']
+    
+    if numero == 0:
+        return 'CERO PESOS'
+    
+    # Separar parte entera y decimal
+    partes = f"{numero:.2f}".split('.')
+    entero = int(partes[0])
+    centavos = int(partes[1])
+    
+    def convertir_hasta_999(n):
+        if n == 0:
+            return ''
+        elif n < 10:
+            return unidades[n]
+        elif 10 <= n < 20:
+            return especiales[n]
+        elif 20 <= n < 100:
+            dec = n // 10
+            uni = n % 10
+            if uni == 0:
+                return decenas[dec]
+            elif dec == 2:
+                return f"VEINTI{unidades[uni]}"
+            else:
+                return f"{decenas[dec]} Y {unidades[uni]}"
+        else:
+            cen = n // 100
+            resto = n % 100
+            if n == 100:
+                return 'CIEN'
+            elif resto == 0:
+                return centenas[cen]
+            else:
+                return f"{centenas[cen]} {convertir_hasta_999(resto)}"
+    
+    def convertir_miles(n):
+        if n < 1000:
+            return convertir_hasta_999(n)
+        
+        miles = n // 1000
+        resto = n % 1000
+        
+        if miles == 1:
+            texto_miles = 'MIL'
+        else:
+            texto_miles = f"{convertir_hasta_999(miles)} MIL"
+        
+        if resto == 0:
+            return texto_miles
+        else:
+            return f"{texto_miles} {convertir_hasta_999(resto)}"
+    
+    # Convertir millones
+    if entero >= 1000000:
+        millones = entero // 1000000
+        resto = entero % 1000000
+        
+        if millones == 1:
+            texto = 'UN MILLON'
+        else:
+            texto = f"{convertir_hasta_999(millones)} MILLONES"
+        
+        if resto > 0:
+            texto += f" {convertir_miles(resto)}"
+    else:
+        texto = convertir_miles(entero)
+    
+    if centavos > 0:
+        return f"{texto} CON {centavos}/100 PESOS"
+    else:
+        return f"{texto} PESOS"
+
 # Configuración de la base de datos
 DB_CONFIG = {
     'host': 'localhost',
@@ -145,6 +225,23 @@ def liquidacion(id_contribuyente):
     total_deuda = sum(r['ImporteFacturado'] for r in recibos_impagos)
     cantidad_impagos = len(recibos_impagos)
     
+    # Generar leyenda certificada con datos del contribuyente
+    nombre_completo = f"{contribuyente['Apellido']} {contribuyente['Nombre'] or ''}".strip()
+    domicilio = f"{contribuyente['Calle'] or ''} {contribuyente['Numero'] or ''}".strip() or 'N/A'
+    partida = contribuyente['Catastro'] or 'N/A'
+    hectareas = f"{contribuyente['Hectareas']:.2f}"
+    total_deuda_numero = f"{total_deuda:.2f}"
+    total_deuda_letras = numero_a_letras(total_deuda)
+    categoria = contribuyente['Categoria']
+    
+    # Generar lista de períodos adeudados
+    periodos_detalle = ""
+    if recibos_impagos:
+        periodos_list = [f"{r['Periodo']} (${r['ImporteFacturado']:.2f})" for r in recibos_impagos]
+        periodos_detalle = ", ".join(periodos_list)
+    
+    leyenda_certificado = f"""La COMUNA DE JUNCAL CERTIFICA QUE EL SR/A.: {nombre_completo}, domiciliado en {domicilio}, actual propietario del inmueble cuya partida inmobiliaria es la siguiente: {partida}, con una extensión de: {hectareas} has, respectivamente, adeuda al día $: {total_deuda_numero}, en concepto de capital e intereses conforme a la Ordenanza Tributaria en vigencia, la suma de {total_deuda_letras}, por la Tasa {categoria}, que corresponde a los períodos que se detallan en el Anexo que junto al presente se acompaña."""
+    
     return render_template('liquidacion.html',
                          contribuyente=contribuyente,
                          recibos_impagos=recibos_impagos,
@@ -152,7 +249,9 @@ def liquidacion(id_contribuyente):
                          importe_calculado=importe_calculado,
                          total_deuda=total_deuda,
                          cantidad_impagos=cantidad_impagos,
-                         fecha_emision=datetime.now().strftime('%d/%m/%Y'))
+                         fecha_emision=datetime.now().strftime('%d/%m/%Y'),
+                         leyenda_certificado=leyenda_certificado,
+                         periodos_detalle=periodos_detalle)
 
 @app.route('/api/resumen_deuda/<int:id_contribuyente>')
 def resumen_deuda(id_contribuyente):

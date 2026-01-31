@@ -448,6 +448,107 @@ footer {
     line-height: 1.6;
 }
 
+/* Certificado de Deuda */
+.certificado-section {
+    margin-top: 40px;
+    padding: 25px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 2px solid #2c3e50;
+}
+
+.certificado-section h3 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    font-size: 1.4em;
+    text-align: center;
+}
+
+.certificado-textarea {
+    width: 100%;
+    padding: 15px;
+    border: 2px solid #2c3e50;
+    border-radius: 5px;
+    font-size: 14px;
+    font-family: Arial, sans-serif;
+    line-height: 1.8;
+    resize: vertical;
+}
+
+.certificado-impresion {
+    padding: 20px;
+    border: 2px solid #2c3e50;
+    margin-top: 20px;
+    text-align: justify;
+    line-height: 1.8;
+    font-size: 14px;
+    background-color: white;
+}
+
+.anexo-periodos {
+    margin-top: 30px;
+    padding: 20px;
+    background-color: #fff3cd;
+    border-left: 4px solid #ffc107;
+    border-radius: 5px;
+}
+
+.anexo-periodos h4 {
+    color: #856404;
+    margin-bottom: 10px;
+    font-size: 1.1em;
+}
+
+.anexo-periodos p {
+    margin-top: 10px;
+    line-height: 1.6;
+    color: #333;
+}
+
+/* Estilos de impresión */
+@media print {
+    body {
+        background: white;
+        padding: 0;
+    }
+
+    .container {
+        box-shadow: none;
+        max-width: 100%;
+        padding: 20px;
+    }
+
+    .no-print {
+        display: none !important;
+    }
+
+    .certificado-impresion {
+        display: block !important;
+        page-break-inside: avoid;
+    }
+
+    .certificado-section {
+        page-break-inside: avoid;
+    }
+
+    .anexo-periodos {
+        page-break-inside: avoid;
+        margin-top: 20px;
+    }
+
+    .tabs-container {
+        display: none;
+    }
+
+    .tab-content {
+        display: block !important;
+    }
+
+    #tab-historial {
+        display: none !important;
+    }
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .container {
