@@ -2,8 +2,50 @@ from flask import Flask, render_template, request, jsonify
 import mysql.connector
 from datetime import datetime
 import os
+from dotenv import load_dotenv
+
+# Cargar variables de entorno desde el archivo .env
+load_dotenv()
 
 app = Flask(__name__)
+
+def formato_moneda(valor):
+    """Formatear número a formato monetario con separador de miles"""
+    if valor is None:
+        return "0,00"
+    # Formatear con punto para miles y coma para decimales (formato argentino)
+    return "{:,.2f}".format(valor).replace(",", "X").replace(".", ",").replace("X", ".")
+
+def formato_periodo(fecha):
+    """Formatear fecha a formato MM/YYYY"""
+    if fecha is None:
+        return ""
+    # Si es string, convertir a datetime
+    if isinstance(fecha, str):
+        try:
+            fecha = datetime.strptime(fecha, '%Y-%m-%d')
+        except:
+            return fecha
+    # Formatear como MM/YYYY
+    return fecha.strftime('%m/%Y')
+
+def formato_fecha(fecha):
+    """Formatear fecha a formato DD/MM/YY"""
+    if fecha is None:
+        return ""
+    # Si es string, convertir a datetime
+    if isinstance(fecha, str):
+        try:
+            fecha = datetime.strptime(fecha, '%Y-%m-%d')
+        except:
+            return fecha
+    # Formatear como DD/MM/YY
+    return fecha.strftime('%d/%m/%y')
+
+# Registrar los filtros personalizados
+app.jinja_env.filters['moneda'] = formato_moneda
+app.jinja_env.filters['periodo'] = formato_periodo
+app.jinja_env.filters['fecha'] = formato_fecha
 
 def numero_a_letras(numero):
     """Convertir número decimal a texto en español"""
@@ -85,12 +127,13 @@ def numero_a_letras(numero):
     else:
         return f"{texto} PESOS"
 
-# Configuración de la base de datos
+# Configuración de la base de datos desde variables de entorno
 DB_CONFIG = {
-    'host': 'localhost',
-    'user': 'root',
-    'password': 'dalas.2009',
-    'database': 'wsur'
+    'host': os.getenv('DB_HOST', 'localhost'),
+    'port': int(os.getenv('DB_PORT', 3306)),
+    'user': os.getenv('DB_USER', 'root'),
+    'password': os.getenv('DB_PASSWORD', ''),
+    'database': os.getenv('DB_NAME', 'wsur')
 }
 
 def get_db_connection():

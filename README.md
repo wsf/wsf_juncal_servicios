@@ -1,6 +1,6 @@
 # Sistema de Liquidación de Deudas - Servicios Rurales Juncal
 
-Sistema web desarrollado en Flask para gestionar y generar liquidaciones de deuda de contribuyentes rurales del Municipio de Juncal.
+Sistema web desarrollado en Flask para gestionar y generar liquidaciones de deuda de contribuyentes rurales de la Comuna de Juncal.
 
 ## Características
 
@@ -134,4 +134,4 @@ Para problemas o consultas sobre el sistema, contactar al administrador del sist
 
 ## Licencia
 
-© 2026 Municipio de Juncal - Uso interno
+© 2026 Comuna de Juncal - Uso interno
