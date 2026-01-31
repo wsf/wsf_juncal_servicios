@@ -451,8 +451,8 @@ footer {
 
 /* Certificado de Deuda */
 .certificado-section {
-    margin-top: 40px;
-    padding: 25px;
+    margin-top: 20px;
+    padding: 15px;
     background-color: #f8f9fa;
     border-radius: 8px;
     border: 2px solid #2c3e50;
@@ -460,19 +460,19 @@ footer {
 
 .certificado-section h3 {
     color: #2c3e50;
-    margin-bottom: 15px;
-    font-size: 1.4em;
+    margin-bottom: 8px;
+    font-size: 1.1em;
     text-align: center;
 }
 
 .certificado-textarea {
     width: 100%;
-    padding: 15px;
+    padding: 10px;
     border: 2px solid #2c3e50;
     border-radius: 5px;
-    font-size: 14px;
+    font-size: 13px;
     font-family: Arial, sans-serif;
-    line-height: 1.8;
+    line-height: 1.5;
     resize: vertical;
 }
 

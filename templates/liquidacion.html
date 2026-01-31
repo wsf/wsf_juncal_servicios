@@ -77,17 +77,17 @@
             <!-- Certificado de Deuda Editable -->
             <div class="certificado-section">
                 <h3>📜 CERTIFICADO DE DEUDA</h3>
-                <p class="no-print" style="font-style: italic; color: #666; margin-bottom: 10px;">
+                <p class="no-print" style="font-style: italic; color: #666; margin-bottom: 6px; font-size: 12px;">
                     ✏️ Puede editar el texto del certificado antes de imprimir si es necesario
                 </p>
-                <textarea id="textoCertificado" class="certificado-textarea no-print" rows="8" style="width: 100%; padding: 15px; border: 2px solid #2c3e50; border-radius: 5px; font-size: 14px; font-family: Arial, sans-serif;">{{ leyenda_certificado }}</textarea>
+                <textarea id="textoCertificado" class="certificado-textarea no-print" rows="5" style="width: 100%; padding: 10px; border: 2px solid #2c3e50; border-radius: 5px; font-size: 13px; font-family: Arial, sans-serif;">{{ leyenda_certificado }}</textarea>
                 
                 <div id="certificadoImpresion" class="certificado-impresion" style="display: none; padding: 20px; border: 2px solid #2c3e50; margin-top: 20px; text-align: justify; line-height: 1.8;">
                     {{ leyenda_certificado }}
                 </div>
 
-                <div class="no-print" style="margin-top: 15px;">
-                    <button onclick="actualizarCertificado()" style="padding: 10px 20px; background-color: #27ae60; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px;">
+                <div class="no-print" style="margin-top: 10px;">
+                    <button onclick="actualizarCertificado()" style="padding: 8px 16px; background-color: #27ae60; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 13px;">
                         ✅ Aplicar Cambios al Certificado
                     </button>
                 </div>
