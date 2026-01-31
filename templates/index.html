@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Liquidación de Deudas - Municipio de Juncal</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏛️ Sistema de Liquidación de Deudas</h1>
+            <h2>Municipio de Juncal - Servicios Rurales</h2>
+        </header>
+
+        <main>
+            <div class="search-section">
+                <h3>Buscar Contribuyente</h3>
+                <div class="search-box">
+                    <input type="text" 
+                           id="searchInput" 
+                           placeholder="Ingrese apellido o nombre del contribuyente..."
+                           autocomplete="off">
+                    <div id="searchResults" class="search-results"></div>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h3>📋 Información</h3>
+                <ul>
+                    <li>Busque el contribuyente por apellido o nombre</li>
+                    <li>Seleccione el contribuyente para ver su liquidación de deuda</li>
+                    <li>El sistema calculará automáticamente la deuda basándose en:
+                        <ul>
+                            <li>Cantidad de hectáreas</li>
+                            <li>Categoría asignada</li>
+                            <li>Valor actual del combustible</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </main>
+
+        <footer>
+            <p>© 2026 Municipio de Juncal - Sistema de Gestión de Servicios Rurales</p>
+        </footer>
+    </div>
+
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        const searchResults = document.getElementById('searchResults');
+        let searchTimeout;
+
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            const query = this.value.trim();
+
+            if (query.length < 2) {
+                searchResults.innerHTML = '';
+                searchResults.style.display = 'none';
+                return;
+            }
+
+            searchTimeout = setTimeout(() => {
+                fetch(`/api/contribuyentes?q=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.length === 0) {
+                            searchResults.innerHTML = '<div class="no-results">No se encontraron contribuyentes</div>';
+                            searchResults.style.display = 'block';
+                            return;
+                        }
+
+                        let html = '<ul>';
+                        data.forEach(contrib => {
+                            const nombre = contrib.Nombre || '';
+                            const nombreCompleto = `${contrib.Apellido} ${nombre}`.trim();
+                            html += `
+                                <li onclick="verLiquidacion(${contrib.ID_contribuyente})">
+                                    <div class="contrib-info">
+                                        <strong>${nombreCompleto}</strong>
+                                        <span class="contrib-details">
+                                            ${contrib.Terreno} has - ${contrib.Categoria} - $${contrib.ValorCategoria}/ha
+                                        </span>
+                                    </div>
+                                </li>
+                            `;
+                        });
+                        html += '</ul>';
+                        searchResults.innerHTML = html;
+                        searchResults.style.display = 'block';
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        searchResults.innerHTML = '<div class="error">Error al buscar contribuyentes</div>';
+                        searchResults.style.display = 'block';
+                    });
+            }, 300);
+        });
+
+        function verLiquidacion(idContribuyente) {
+            window.location.href = `/liquidacion/${idContribuyente}`;
+        }
+
+        // Cerrar resultados al hacer clic fuera
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.search-box')) {
+                searchResults.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

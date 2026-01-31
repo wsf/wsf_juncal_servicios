@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liquidación de Deuda - {{ contribuyente.Apellido }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        @media print {
+            .no-print { display: none; }
+            body { background: white; }
+            .container { box-shadow: none; max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="no-print" style="margin-bottom: 20px;">
+            <a href="/" class="btn-back">← Volver a búsqueda</a>
+            <button onclick="window.print()" class="btn-print">🖨️ Imprimir</button>
+        </div>
+
+        <div class="liquidacion-header">
+            <h1>🏛️ MUNICIPIO DE JUNCAL</h1>
+            <h2>ESTADO DE CUENTA - SERVICIOS RURALES</h2>
+            <p class="fecha-emision">Fecha de emisión: {{ fecha_emision }}</p>
+        </div>
+
+        <!-- Selector de vista -->
+        <div class="tabs-container no-print">
+            <button class="tab-button active" onclick="cambiarTab('deuda')">
+                💰 Liquidación de Deuda
+            </button>
+            <button class="tab-button" onclick="cambiarTab('historial')">
+                ✅ Historial de Pagos
+            </button>
+        </div>
+
+        <section class="datos-contribuyente">
+            <h3>📋 Datos del Contribuyente</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <label>Apellido y Nombre:</label>
+                    <span>{{ contribuyente.Apellido }} {{ contribuyente.Nombre or '' }}</span>
+                </div>
+                <div class="info-item">
+                    <label>ID Contribuyente:</label>
+                    <span>{{ contribuyente.ID_contribuyente }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Catastro:</label>
+                    <span>{{ contribuyente.Catastro or 'N/A' }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Dirección:</label>
+                    <span>{{ contribuyente.Calle or '' }} {{ contribuyente.Numero or '' }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Hectáreas:</label>
+                    <span><strong>{{ "%.2f"|format(contribuyente.Hectareas) }} has</strong></span>
+                </div>
+                <div class="info-item">
+                    <label>Categoría:</label>
+                    <span><strong>{{ contribuyente.Categoria }}</strong></span>
+                </div>
+                <div class="info-item">
+        <!-- Tab de Deuda -->
+        <div id="tab-deuda" class="tab-content active">
+                    <label>Valor por Hectárea:</label>
+                    <span><strong>${{ "%.2f"|format(contribuyente.ValorActualPorHa) }}</strong></span>
+                </div>
+                <div class="info-item">
+                    <label>Importe por Período:</label>
+                    <span class="destacado">${{ "%.2f"|format(importe_calculado) }}</span>
+                </div>
+            </div>
+        </section>
+
+        {% if recibos_impagos %}
+        <section class="deuda-section">
+            <h3>💰 Detalle de Deuda - Recibos Impagos</h3>
+            <table class="tabla-recibos">
+                <thead>
+                    <tr>
+                        <th>Nro Recibo</th>
+                        <th>Período</th>
+                        <th>Fecha Generación</th>
+                        <th>Valor Actual Combustible</th>
+                        <th>Categoría</th>
+                        <th>Importe Calculado</th>
+                        <th>Importe Facturado</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for recibo in recibos_impagos %}
+                    <tr>
+                        <td>{{ recibo.NroRecibo }}</td>
+                        <td>{{ recibo.Periodo }}</td>
+                        <td>{{ recibo.FechaGeneracion }}</td>
+                        <td>${{ "%.2f"|format(contribuyente.ValorActualPorHa) }}</td>
+                        <td>{{ contribuyente.Categoria }}</td>
+                        <td>${{ "%.2f"|format(importe_calculado) }}</td>
+                        <td class="monto">${{ "%.2f"|format(recibo.ImporteFacturado) }}</td>
+                        <td><span class="estado-impago">{{ recibo.Estado }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="total-deuda">
+                <div class="total-row">
+                    <span>Cantidad de Períodos Adeudados:</span>
+                    <strong>{{ cantidad_impagos }}</strong>
+                </div>
+                <div class="total-row">
+                    <span>Importe Total Calculado (Valor Actual):</span>
+                    <strong>${{ "%.2f"|format(importe_calculado * cantidad_impagos) }}</strong>
+                </div>
+                <div class="total-row destacado-grande">
+                    <span>TOTAL DEUDA FACTURADA:</span>
+                    <strong>${{ "%.2f"|format(total_deuda) }}</strong>
+                </div>
+            </div>
+        </section>
+        {% else %}
+        <section class="sin-deuda">
+            <h3>✅ Estado de Cuenta al Día</h3>
+            <p class="mensaje-ok">El contribuyente no presenta recibos impagos.</p>
+        </section>
+        {% endif %}
+        </div>
+
+        <!-- Tab de Historial de Pagos -->
+        <div id="tab-historial" class="tab-content">
+        <section class="pagos-section">
+            <h3>✅ Historial de Pagos Realizados</h3>
+            <div class="info-resumen">
+                <p><strong>Total de pagos registrados:</strong> {{ recibos_pagados|length }} recibos mostrados (últimos registros)</p>
+            </div>
+        {% if recibos_pagados %}
+            <table class="tabla-recibos">
+                <thead>
+                    <tr>
+                        <th>Nro Recibo</th>
+                        <th>Período</th>
+                        <th>Fecha Generación</th>
+                        <th>Importe</th>
+                        <th>Fecha Pago</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for recibo in recibos_pagados %}
+                    <tr>
+                        <td>{{ recibo.NroRecibo }}</td>
+                        <td>{{ recibo.Periodo }}</td>
+                        <td>{{ recibo.FechaGeneracion }}</td>
+                        <td class="monto">${{ "%.2f"|format(recibo.ImporteFacturado) }}</td>
+                        <td>{{ recibo.FechaPago }}</td>
+                        <td><span class="estado-pagado">{{ recibo.Estado }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="mensaje-info">No se encontraron pagos registrados para este contribuyente.</p>
+        {% endif %}
+        </section>
+        </div>
+
+        <footer class="liquidacion-footer">
+            <p><strong>Nota:</strong> Esta liquidación fue generada automáticamente en base a la información registrada en el sistema.</p>
+            <p>Los importes calculados utilizan el valor actual de la categoría ({{ contribuyente.Categoria }}: ${{ "%.2f"|format(contribuyente.ValorActualPorHa) }}/ha).</p>
+            <p>© 2026 Municipio de Juncal - Sistema de Gestión de Servicios Rurales</p>
+        </footer>
+    </div>
+
+    <script>
+        function cambiarTab(tab) {
+            // Ocultar todos los contenidos
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Desactivar todos los botones
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            // Activar el tab seleccionado
+            if (tab === 'deuda') {
+                document.getElementById('tab-deuda').classList.add('active');
+                document.querySelectorAll('.tab-button')[0].classList.add('active');
+            } else if (tab === 'historial') {
+                document.getElementById('tab-historial').classList.add('active');
+                document.querySelectorAll('.tab-button')[1].classList.add('active');
+            }
+        }
+    </script>
+</body>
+</html>
