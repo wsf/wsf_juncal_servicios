@@ -415,8 +415,7 @@ def listado_deuda_rural():
             c.Terreno as hectareas,
             coef.Descripcion as categoria,
             coef.Valor as valor_categoria,
-            COUNT(DISTINCT r.NroRecibo) as cuotas_deudadas,
-            (COUNT(DISTINCT r.NroRecibo) * c.Terreno * coef.Valor) as deuda_total
+            COUNT(DISTINCT r.NroRecibo) as cuotas_deudadas
         FROM t_contribuyente c
         INNER JOIN t_personas p ON c.ID_persona = p.ID_Persona
         INNER JOIN t_serviciosxcontribuyente sc ON c.ID_contribuyente = sc.ID_Contribuyente
@@ -433,10 +432,26 @@ def listado_deuda_rural():
         cursor.execute(sql)
         contribuyentes = cursor.fetchall()
         
+        # Calcular litros por cuota según categoría
+        for c in contribuyentes:
+            categoria = c['categoria']
+            hectareas = float(c['hectareas'] or 0)
+            
+            # Definir litros por hectárea según categoría
+            if 'cat 01' in categoria:
+                litros_por_ha = 1.375
+            elif 'cat 02' in categoria or 'Cat 3' in categoria:
+                litros_por_ha = 1.625
+            else:
+                litros_por_ha = 0
+            
+            c['litros_por_cuota'] = hectareas * litros_por_ha
+            c['litros_totales'] = c['litros_por_cuota'] * int(c['cuotas_deudadas'] or 0)
+        
         # Calcular totales manejando valores None
         total_hectareas = sum(float(c['hectareas'] or 0) for c in contribuyentes)
         total_cuotas = sum(int(c['cuotas_deudadas'] or 0) for c in contribuyentes)
-        total_deuda = sum(float(c['deuda_total'] or 0) for c in contribuyentes)
+        total_litros = sum(float(c['litros_totales'] or 0) for c in contribuyentes)
         
         cursor.close()
         conn.close()
@@ -445,7 +460,7 @@ def listado_deuda_rural():
                              contribuyentes=contribuyentes,
                              total_hectareas=total_hectareas,
                              total_cuotas=total_cuotas,
-                             total_deuda=total_deuda,
+                             total_litros=total_litros,
                              fecha_generacion=datetime.now())
     except Exception as e:
         return f"Error al generar listado: {str(e)}", 500

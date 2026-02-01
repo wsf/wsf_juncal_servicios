@@ -362,8 +362,8 @@
                     <div class="stat-value">{{ total_cuotas }}</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">Deuda Total</div>
-                    <div class="stat-value">${{ total_deuda|moneda }}</div>
+                    <div class="stat-label">Litros Totales</div>
+                    <div class="stat-value">{{ total_litros|moneda }} Lts</div>
                 </div>
             </div>
 
@@ -374,9 +374,8 @@
                             <th class="sortable" data-column="nombre">Nombre</th>
                             <th class="sortable text-center" data-column="hectareas">Hectáreas</th>
                             <th class="sortable text-center" data-column="categoria">Categoría</th>
-                            <th class="sortable text-right" data-column="valor">Valor/Ha</th>
                             <th class="sortable text-center" data-column="cuotas">Cuotas Deudadas</th>
-                            <th class="sortable text-right" data-column="deuda">Deuda Total</th>
+                            <th class="sortable text-right" data-column="litros">Litros por Cuota</th>
                             <th class="text-center">Acciones</th>
                         </tr>
                     </thead>
@@ -386,9 +385,8 @@
                             <td>{{ c.nombre_completo }}</td>
                             <td class="text-center">{{ c.hectareas|moneda }}</td>
                             <td class="text-center">{{ c.categoria }}</td>
-                            <td class="text-right">${{ c.valor_categoria|moneda }}</td>
                             <td class="text-center">{{ c.cuotas_deudadas }}</td>
-                            <td class="text-right">${{ c.deuda_total|moneda }}</td>
+                            <td class="text-right">{{ c.litros_por_cuota|moneda }} Lts</td>
                             <td class="text-center">
                                 <a href="/liquidacion/{{ c.ID_contribuyente }}" 
                                    class="nombre-link"
@@ -404,9 +402,9 @@
                         <tr class="total-row">
                             <td>TOTALES</td>
                             <td class="text-center">{{ total_hectareas|moneda }}</td>
-                            <td colspan="2"></td>
+                            <td></td>
                             <td class="text-center">{{ total_cuotas }}</td>
-                            <td class="text-right">${{ total_deuda|moneda }}</td>
+                            <td class="text-right">{{ total_litros|moneda }} Lts</td>
                             <td></td>
                         </tr>
                     </tfoot>
