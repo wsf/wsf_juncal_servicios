@@ -256,13 +256,20 @@
                 <tr>
                     <td style="padding: 12px; border: 1px solid #ddd; background-color: #f8f9fa; font-weight: bold;">Hectáreas:</td>
                     <td style="padding: 12px; border: 1px solid #ddd;"><strong>{{ contribuyente.Hectareas|moneda }} has</strong></td>
-                    <td style="padding: 12px; border: 1px solid #ddd; background-color: #f8f9fa; font-weight: bold;">Valor por Hectárea:</td>
-                    <td style="padding: 12px; border: 1px solid #ddd;"><strong>${{ contribuyente.ValorActualPorHa|moneda }}</strong></td>
+                    <td style="padding: 12px; border: 1px solid #ddd; background-color: #f8f9fa; font-weight: bold;">Litros por Hectárea:</td>
+                    <td style="padding: 12px; border: 1px solid #ddd;"><strong>{{ litros_por_ha|moneda }} Lts/ha</strong></td>
                 </tr>
                 <tr>
-                    <td style="padding: 12px; border: 1px solid #ddd; background-color: #f8f9fa; font-weight: bold;">Importe por Período:</td>
-                    <td colspan="3" style="padding: 12px; border: 1px solid #ddd; background-color: #e8f5e9;"><strong style="color: #27ae60; font-size: 16px;">${{ importe_calculado|moneda }}</strong></td>
+                    <td style="padding: 12px; border: 1px solid #ddd; background-color: #f8f9fa; font-weight: bold;">Litros por Período:</td>
+                    <td colspan="3" style="padding: 12px; border: 1px solid #ddd; background-color: #e8f5e9;"><strong style="color: #27ae60; font-size: 16px;">{{ litros_por_cuota|moneda }} Lts</strong></td>
                 </tr>
+                {% if mes_desde and anio_desde %}
+                <tr>
+                    <td style="padding: 12px; border: 1px solid #ddd; background-color: #fff3cd; font-weight: bold;" colspan="4">
+                        📅 <strong>Períodos calculados desde:</strong> {{ mes_desde }}/{{ anio_desde }} en adelante
+                    </td>
+                </tr>
+                {% endif %}
             </table>
         </section>
 
@@ -293,20 +300,19 @@
             <!-- Valor de referencia actualizado -->
             <div style="margin-top: 30px; padding: 15px; background-color: #f8f9fa; border-left: 4px solid #2c3e50;">
                 <p style="margin: 0; font-size: 15px; line-height: 1.6;">
-                    <strong>Valor Unidad Tributario por hectárea:</strong> 
-                    ${{ contribuyente.ValorActualPorHa|moneda }} ({{ contribuyente.Categoria }})
+                    <strong>Regla de pago:</strong> 
+                    {{ litros_por_ha|moneda }} litros de combustible por hectárea ({{ contribuyente.Categoria }})
                 </p>
             </div>
 
-            <h3 style="margin-top: 40px;">💰 Detalle de Deuda - Recibos Impagos</h3>
+            <h3 style="margin-top: 40px;">� Detalle de Deuda - Recibos Impagos</h3>
             <table class="tabla-recibos">
                 <thead>
                     <tr>
                         <th>Nro Recibo</th>
                         <th>Período</th>
                         <th>Fecha Generación</th>
-                        <th>Importe Deuda Actualizada</th>
-                        <th>Importe Facturado</th>
+                        <th>Litros</th>
                         <th class="col-estado">Estado</th>
                     </tr>
                 </thead>
@@ -316,8 +322,7 @@
                         <td>{{ recibo.NroRecibo }}</td>
                         <td>{{ recibo.Periodo|periodo }}</td>
                         <td>{{ recibo.FechaGeneracion|fecha }}</td>
-                        <td>${{ importe_calculado|moneda }}</td>
-                        <td class="monto">${{ recibo.ImporteFacturado|moneda }}</td>
+                        <td class="monto">{{ litros_por_cuota|moneda }} Lts</td>
                         <td class="col-estado"><span class="estado-impago">{{ recibo.Estado }}</span></td>
                     </tr>
                     {% endfor %}
@@ -329,14 +334,24 @@
                     <span>Cantidad de Períodos Adeudados:</span>
                     <strong>{{ cantidad_impagos }}</strong>
                 </div>
-                <div class="total-row destacado-grande">
-                    <span>TOTAL DEUDA ACTUALIZADA:</span>
-                    <strong>${{ (importe_calculado * cantidad_impagos)|moneda }}</strong>
+                <div class="total-row">
+                    <span>Litros por Cuota:</span>
+                    <strong>{{ litros_por_cuota|moneda }} Lts</strong>
                 </div>
                 <div class="total-row">
-                    <span>Total Facturado Originalmente:</span>
-                    <strong>${{ total_deuda|moneda }}</strong>
+                    <span>TOTAL LITROS ADEUDADOS:</span>
+                    <strong>{{ total_litros|moneda }} Lts</strong>
                 </div>
+                {% if valor_litro > 0 %}
+                <div class="total-row">
+                    <span>Valor del Litro:</span>
+                    <strong>${{ valor_litro|moneda }}</strong>
+                </div>
+                <div class="total-row destacado-grande">
+                    <span>TOTAL DEUDA EN PESOS:</span>
+                    <strong>${{ total_pesos|moneda }}</strong>
+                </div>
+                {% endif %}
             </div>
         </section>
         {% else %}

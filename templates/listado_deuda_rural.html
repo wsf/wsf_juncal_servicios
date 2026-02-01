@@ -341,6 +341,94 @@
         </div>
 
         <div class="content">
+            <div style="margin-bottom: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 8px; border-left: 4px solid #667eea;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div>
+                        <label for="valorLitro" style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">
+                            🛢️ Valor del Litro de Combustible:
+                        </label>
+                        <input type="number" 
+                               id="valorLitro" 
+                               placeholder="Ej: {{ valor_litro_default }}" 
+                               step="0.01"
+                               min="0"
+                               value="{{ valor_litro_default }}"
+                               oninput="calcularTotalPesos()"
+                               style="padding: 10px; border: 2px solid #e9ecef; border-radius: 5px; font-size: 16px; width: 100%;">
+                        <span style="margin-left: 5px; color: #666;">$/litro</span>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">
+                            📅 Filtrar períodos desde:
+                        </label>
+                        <div style="display: flex; gap: 10px;">
+                            <select id="mesDesde" style="padding: 10px; border: 2px solid #e9ecef; border-radius: 5px; font-size: 16px; flex: 1;">
+                                <option value="01">Enero</option>
+                                <option value="02">Febrero</option>
+                                <option value="03">Marzo</option>
+                                <option value="04">Abril</option>
+                                <option value="05">Mayo</option>
+                                <option value="06">Junio</option>
+                                <option value="07">Julio</option>
+                                <option value="08">Agosto</option>
+                                <option value="09">Septiembre</option>
+                                <option value="10">Octubre</option>
+                                <option value="11">Noviembre</option>
+                                <option value="12">Diciembre</option>
+                            </select>
+                            <input type="number" 
+                                   id="anioDesde" 
+                                   placeholder="Año" 
+                                   min="2000"
+                                   max="2050"
+                                   value="{{ anio_desde_default }}"
+                                   style="padding: 10px; border: 2px solid #e9ecef; border-radius: 5px; font-size: 16px; width: 100px;">
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="border-top: 2px solid #e9ecef; padding-top: 15px; margin-top: 10px;">
+                    <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #333;">
+                        🔧 Configuración de Litros por Hectárea:
+                    </label>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 10px;">
+                        <div>
+                            <label for="litrosCat01" style="display: block; font-size: 13px; color: #666; margin-bottom: 5px;">Rural Cat 01:</label>
+                            <input type="number" 
+                                   id="litrosCat01" 
+                                   placeholder="Litros/ha" 
+                                   step="0.001"
+                                   min="0"
+                                   value="{{ litros_cat01_default }}"
+                                   style="padding: 8px; border: 2px solid #e9ecef; border-radius: 5px; font-size: 14px; width: 100%;">
+                        </div>
+                        <div>
+                            <label for="litrosCat02" style="display: block; font-size: 13px; color: #666; margin-bottom: 5px;">Rural Cat 02:</label>
+                            <input type="number" 
+                                   id="litrosCat02" 
+                                   placeholder="Litros/ha" 
+                                   step="0.001"
+                                   min="0"
+                                   value="{{ litros_cat02_default }}"
+                                   style="padding: 8px; border: 2px solid #e9ecef; border-radius: 5px; font-size: 14px; width: 100%;">
+                        </div>
+                        <div>
+                            <label for="litrosCat03" style="display: block; font-size: 13px; color: #666; margin-bottom: 5px;">Rural Cat 3:</label>
+                            <input type="number" 
+                                   id="litrosCat03" 
+                                   placeholder="Litros/ha" 
+                                   step="0.001"
+                                   min="0"
+                                   value="{{ litros_cat03_default }}"
+                                   style="padding: 8px; border: 2px solid #e9ecef; border-radius: 5px; font-size: 14px; width: 100%;">
+                        </div>
+                    </div>
+                    <button onclick="aplicarFiltroFecha()" style="padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: 600;">
+                        🔄 Aplicar Configuración y Filtros
+                    </button>
+                </div>
+            </div>
+            
             <div class="search-box">
                 <input type="text" 
                        id="searchInput" 
@@ -365,7 +453,17 @@
                     <div class="stat-label">Litros Totales</div>
                     <div class="stat-value">{{ total_litros|moneda }} Lts</div>
                 </div>
+                <div class="stat-card" id="statTotalPesos" style="display: none;">
+                    <div class="stat-label">Total en Pesos</div>
+                    <div class="stat-value">$<span id="totalPesosValor">0,00</span></div>
+                </div>
             </div>
+
+            {% if mes_desde and anio_desde %}
+            <div style="padding: 12px; background-color: #fff3cd; border-left: 4px solid #ffc107; margin-bottom: 15px; border-radius: 5px;">
+                📅 <strong>Mostrando períodos desde:</strong> {{ mes_desde }}/{{ anio_desde }} en adelante
+            </div>
+            {% endif %}
 
             <div class="table-container">
                 <table id="debtTable">
@@ -414,6 +512,9 @@
     </div>
 
     <script>
+        // Establecer valor por defecto del mes desde el backend
+        document.getElementById('mesDesde').value = '{{ mes_desde_default }}';
+        
         // Búsqueda en tiempo real
         const searchInput = document.getElementById('searchInput');
         const tableBody = document.getElementById('tableBody');
@@ -504,6 +605,36 @@
             // Reordenar las filas en el DOM
             rowsArray.forEach(row => tbody.appendChild(row));
         }
+
+        // Calcular total en pesos
+        function calcularTotalPesos() {
+            const valorLitro = parseFloat(document.getElementById('valorLitro').value) || 0;
+            const totalLitros = {{ total_litros }};
+            const totalPesos = valorLitro * totalLitros;
+            
+            const statCard = document.getElementById('statTotalPesos');
+            const valorSpan = document.getElementById('totalPesosValor');
+            
+            if (valorLitro > 0) {
+                statCard.style.display = 'block';
+                valorSpan.textContent = totalPesos.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ".").replace(".", ",").replace(/(\d),(\d{2})$/, "$1.$2");
+            } else {
+                statCard.style.display = 'none';
+            }
+        }
+
+        // Aplicar filtro de fecha
+        function aplicarFiltroFecha() {
+            const mes = document.getElementById('mesDesde').value;
+            const anio = document.getElementById('anioDesde').value;
+            const litrosCat01 = document.getElementById('litrosCat01').value || 1.375;
+            const litrosCat02 = document.getElementById('litrosCat02').value || 1.625;
+            const litrosCat03 = document.getElementById('litrosCat03').value || 1.625;
+            window.location.href = `/listado_deuda_rural?mes_desde=${mes}&anio_desde=${anio}&litros_cat01=${litrosCat01}&litros_cat02=${litrosCat02}&litros_cat03=${litrosCat03}`;
+        }
+
+        // Calcular al cargar la página
+        window.addEventListener('load', calcularTotalPesos);
     </script>
 </body>
 </html>
